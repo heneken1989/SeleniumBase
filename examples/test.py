@@ -93,8 +93,7 @@ def try_another_way(sb):
 
 def get_next_unused_backup_code():
     all_codes = [
-        "2006516659", "7562800394",
-
+         "4369897539", "7355363950","6913434287","7164526208"
     ]
     used_path = "used_codes.txt"
 
