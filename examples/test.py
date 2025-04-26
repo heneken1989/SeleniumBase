@@ -93,7 +93,7 @@ def try_another_way(sb):
 
 def get_next_unused_backup_code():
     all_codes = [
-         "4369897539", "7355363950","6913434287","7164526208"
+         "6576618741", "9789910562"
     ]
     used_path = "used_codes.txt"
 
@@ -121,17 +121,18 @@ chrome_options = {
 }
 
 def check_login_status(sb):
-    """Check if we're logged into Gmail"""
-    current_url = sb.get_current_url()
-    print(f"🌐 Current URL: {current_url}")
+    """Check if logged into Gmail account 1 inbox."""
+    target_url = "https://mail.google.com/mail/u/0/#inbox"
     
     # Wait for possible redirects
     for _ in range(5):
-        if "inbox" in current_url.lower() or "mail/u/" in current_url:
-            return True
-        time.sleep(1)
         current_url = sb.get_current_url()
         print(f"🌐 Checking URL: {current_url}")
+        
+        if current_url == target_url:
+            return True
+        
+        time.sleep(1)
     
     return False
 
@@ -172,7 +173,21 @@ with SB(**chrome_options) as sb:
         
         # Step 2: Enter email address and press Next
         sb.type('input[type="email"]', 'huyhien1989@gmail.com\n')  # Replace with your email
-        sb.click('#identifierNext')
+        print("Typed Email Address")
+        try:
+            sb.click("#identifierNext")
+            print("✅ Clicked Next button normally.")
+        except Exception as e:
+            print(f"⚠️ Normal click failed: {e}")
+            print("👉 Trying JavaScript click...")
+            try:
+                element = sb.find_element("#identifierNext")  # <- first, get fresh element
+                sb.execute_script("arguments[0].click();", element)  # <- then click it
+                print("✅ JavaScript clicked Next button.")
+            except Exception as js_error:
+                print(f"❌ JavaScript click also failed: {js_error}")
+                raise  # Re-raise if both methods fail
+        
         sb.save_screenshot_to_logs("step2_email_entered.png")  # Screenshot after email entered
         
         # Wait for the password field to load
@@ -205,6 +220,10 @@ with SB(**chrome_options) as sb:
         # Take a screenshot of the result
         sb.save_screenshot_to_logs("step5_backup_code_entered.png")
         print("✅ Backup code entered successfully")
-        sb.open("https://mail.google.com")
+        sb.open("https://mail.google.com/mail/u/0/#inbox")
         sb.sleep(5)
+        if check_login_status(sb):
+            print("✅ Successfully logged in to Gmail!")
+        else:
+            print("❌ Failed to log in to Gmail after entering backup code.")
         sb.save_screenshot_to_logs("step6_gmail_opened.png")
